@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import math
 from scipy import optimize
 import numpy as np
+from tqdm import tqdm, trange
 
 def rms(numbers):
     # Check for an empty list to avoid division by zero
@@ -38,7 +39,7 @@ def THD_N(x_values, y_values):
 
 
 
-if __name__ == "__main__":
+def main():
     arg = sys.argv[1]
     # print(arg)
 
@@ -135,4 +136,5 @@ if __name__ == "__main__":
 
     print(arg, formatNumbers(THD_Values))
 
-
+if __name__ == "__main__":
+    main()

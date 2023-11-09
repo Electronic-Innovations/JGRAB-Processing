@@ -32,15 +32,13 @@ def read_requirements(path):
 setup(
     name="jgrab_processing",
     version=read("jgrab_processing", "VERSION"),
-    description="Awesome jgrab_processing created by danielpi",
+    description="Program for parsing EI data files in the JGRAB format",
     url="https://github.com/danielpi/JGRAB-Processing/",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     author="danielpi",
-    packages=find_packages(exclude=["tests", ".github"]),
-    install_requires=read_requirements("requirements.txt"),
+    packages=find_packages(exclude=["tests"]),
     entry_points={
         "console_scripts": ["jgrab_processing = jgrab_processing.__main__:main"]
     },
-    extras_require={"test": read_requirements("requirements-test.txt")},
 )

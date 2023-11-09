@@ -7,7 +7,11 @@ Be creative! do whatever you want!
 - Start a web application
 - Import things from your .base module
 """
+import os
+import argparse
+import subprocess
 
+import base
 
 def main():  # pragma: no cover
     parser = argparse.ArgumentParser()

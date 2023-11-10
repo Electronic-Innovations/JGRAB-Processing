@@ -37,29 +37,7 @@ def THD_N(x_values, y_values):
     return (rms(noise) / rms(fundamental) * 100)
 
 
-
-
-def main():
-    arg = sys.argv[1]
-    # print(arg)
-
-    start_reading_data = False
-    data = [[],[],[],[],[]]
-    timestamp = None
-    col_index = 0
-
-    with open(arg) as f:
-        for line in f:
-            if start_reading_data:
-                if line.startswith("%%"):
-                    col_index = col_index + 1
-                else:
-                    data[col_index].append(int(line.split()[0]))
-            if line.startswith("JGRAB"):
-                start_reading_data = True
-
-    # print(data)
-
+def plot(data: list[list[int]], filename: str):
     # Create x-axis values (e.g., for the time points)
     x_values = range(len(data[0]))  # Assuming the x-axis represents time or index
 
@@ -100,7 +78,7 @@ def main():
     params, params_covariance = optimize.curve_fit(sin_wave, x_values, data[2], p0=[12000, 0.1, 1])
     print(params[2])
 
-    # plt.figure(figsize=(6, 4))
+    plt.figure(figsize=(6, 4))
     # plt.scatter(x_data, y_data, label='Data')
     plot_x_start = 0
     plot_x_finish = 240
@@ -119,22 +97,30 @@ def main():
         plt.plot(shifted_x_values, data[i], label=labels[i])
  
     # Customize the plot
-    plt.title(arg)
+    print(os.path.basename(filename))
+    plt.title(os.path.basename(filename))
     plt.xlabel("Time")
     plt.ylabel("Voltage")
     plt.xlim(plot_x_start, plot_x_finish)
     plt.ylim(-20000, 20000)
     # plt.legend()
-
+    # print(arg, formatNumbers(THD_Values))
     # Save the plot to a file (e.g., in PNG format)
     # output_filename = str(int(math.copysign((params[2] / params[1]), params[0]))) + ' ' + os.path.splitext(arg)[0] + ".png"  # Change the filename and format as needed
-    output_filename = os.path.splitext(arg)[0] + ".png"  # Change the filename and format as needed
+    output_filename = os.path.splitext(filename)[0] + ".png"  # Change the filename and format as needed
     plt.savefig(output_filename, format="png")
 
-    # Display the plot
-    # plt.show()
 
-    print(arg, formatNumbers(THD_Values))
+def main():
+    arg = sys.argv[1]
+    # print(arg)
+    data = jgrab.parse_file(arg)
+    print(data)
+    plot(data, arg)
+    
+    
+
+
 
 if __name__ == "__main__":
     main()

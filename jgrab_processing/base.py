@@ -7,6 +7,7 @@ import math
 from scipy import optimize
 import numpy as np
 from tqdm import tqdm, trange
+import polars as pl
 
 def rms(numbers):
     # Check for an empty list to avoid division by zero
@@ -36,22 +37,35 @@ def THD_N(x_values, y_values):
     noise = y_values - fundamental
     return (rms(noise) / rms(fundamental) * 100)
 
+def THD_data(data: list[list[int]]) -> list[float]:
+    THD_Values = [THD_N(x_values, data[0]), THD_N(x_values, data[1]), THD_N(x_values, data[2]), THD_N(x_values, data[3]), THD_N(x_values, data[4])]
+    return THD_Values
+
+def process_data(data: list[list[int]]) -> pl.dataframe:
+    frame = pl.DataFrame(data)
+    labels = ['Dc-V','Sph-Unscaled','RphV','Rphl-Unscaled','SphV']
+    frame.columns = labels
+    
+    x_values = [(20 * value / 64) for value in range(len(data[0]))]
+    
+    frame = frame.with_columns(
+        pl.Series(name="time", values=x_values)
+    )
+    print(frame)
+    return frame
 
 def plot(data: list[list[int]], filename: str):
     # Create x-axis values (e.g., for the time points)
     x_values = range(len(data[0]))  # Assuming the x-axis represents time or index
+    
 
     labels = ['Dc-V','Sph-Unscaled','RphV','Rphl-Unscaled','SphV']
 
     max_values = [max(values) for values in data]
     min_values = [min(values) for values in data]
     rms_values = [rms(values) for values in data]
-    # print(max_values)
-    # print(min_values)
-    # print(formatNumbers(rms_values))
 
     # Attempt to fit a sin wave to each waveform
-
     parameters = []
 
     for i in range(len(data)):
@@ -59,14 +73,6 @@ def plot(data: list[list[int]], filename: str):
         parameters.append(params)
 
     # print(parameters)
-
-    
-    THD_Values = [THD_N(x_values, data[0]), THD_N(x_values, data[1]), THD_N(x_values, data[2]), THD_N(x_values, data[3]), THD_N(x_values, data[4])]
-    # print(THD_N(x_values, data[0]))
-    # print(THD_N(x_values, data[1]))
-    # print(THD_N(x_values, data[2]))
-    # print(THD_N(x_values, data[3]))
-    # print(THD_N(x_values, data[4]))
 
 
     # Plot each column of data
@@ -113,14 +119,8 @@ def plot(data: list[list[int]], filename: str):
 
 def main():
     arg = sys.argv[1]
-    # print(arg)
     data = jgrab.parse_file(arg)
-    print(data)
     plot(data, arg)
-    
-    
-
-
 
 if __name__ == "__main__":
     main()

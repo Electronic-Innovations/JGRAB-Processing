@@ -33,8 +33,7 @@ def parse_string(jgrab: str, base: int = 10) -> list[list[int]]:
                 value = int(line.split()[0], base = base)
                 data[col_index].append(value)
             except ValueError:
-                # Don't do anything?
-                print("No int here")
+                pass
         
     return data
     

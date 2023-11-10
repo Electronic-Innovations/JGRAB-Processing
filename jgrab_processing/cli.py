@@ -43,6 +43,7 @@ def main():  # pragma: no cover
     path = args.path[0]
     if os.path.isfile(path):
         data = jgrab.parse_file(path)
+        base.process_data(data)
         base.plot(data, path)
     elif os.path.isdir(path):
         print("Directory Provided")

@@ -29,7 +29,12 @@ def formatNumbers(numbers):
     return ["{:.2f}".format(number) for number in numbers]
 
 def sin_wave(x, amplitude, frequency, phase):
-    return amplitude * np.sin((frequency * x)+phase)
+    a = frequency * x
+    b = a + phase
+    c = np.sin(b)
+    d = amplitude * c
+    return d
+    #return amplitude * np.sin((frequency * x) + phase)
 
 def THD_N(x_values, y_values):
     params, params_covariance = optimize.curve_fit(sin_wave, x_values, y_values, p0=[12000, 0.1, 1])
@@ -51,71 +56,38 @@ def process_data(data: list[list[int]]) -> pl.dataframe:
     frame = frame.with_columns(
         pl.Series(name="time", values=x_values)
     )
-    print(frame)
     return frame
 
-def plot(data: list[list[int]], filename: str):
-    # Create x-axis values (e.g., for the time points)
-    x_values = range(len(data[0]))  # Assuming the x-axis represents time or index
-    
+def fit_sin_wave(data: pl.dataframe) -> list[float]:
+    params, params_covariance = optimize.curve_fit(sin_wave, data.to_series(0), data.to_series(1))
+    return params
 
-    labels = ['Dc-V','Sph-Unscaled','RphV','Rphl-Unscaled','SphV']
-
-    max_values = [max(values) for values in data]
-    min_values = [min(values) for values in data]
-    rms_values = [rms(values) for values in data]
-
-    # Attempt to fit a sin wave to each waveform
-    parameters = []
-
-    for i in range(len(data)):
-        params, params_covariance = optimize.curve_fit(sin_wave, x_values, data[i], p0=[12000, 0.1, 1])
-        parameters.append(params)
-
-    # print(parameters)
-
-
-    # Plot each column of data
-    #for i in range(len(data)):
-    #    plt.plot(x_values, data[i], label=f'Column {i + 1}')
-    # print(60 * params[2])
-    # print([(x + (60 * params[2])) for x in x_values])
-
-    params, params_covariance = optimize.curve_fit(sin_wave, x_values, data[2], p0=[12000, 0.1, 1])
-    print(params[2])
-
+def plot(data: pl.dataframe, sin_wave: list[float], filename: str):
     plt.figure(figsize=(6, 4))
     # plt.scatter(x_data, y_data, label='Data')
     plot_x_start = 0
-    plot_x_finish = 240
-    full_x_values = range(plot_x_start, plot_x_finish)
-    phase_angle = 0 if params[0] > 0 else math.pi
-    plt.plot(full_x_values, sin_wave(full_x_values, params[0], params[1], phase_angle),label='Fitted function', color='#D3D3D3')
+    plot_x_finish = (20 * 240) / 64
+    full_x_values = np.arange(plot_x_start, plot_x_finish, 0.1)
+    phase_angle = 0 if sin_wave[0] > 0 else math.pi
+    
+    a = (sin_wave[1] * full_x_values) + sin_wave[2] # phase_angle
+    b = np.sin(a)
+    c = sin_wave[0] * b
+    sin_wave_values = c
+    # sin_wave_values = sin_wave(full_x_values, sin_wave(0), sin_wave(1), phase_angle)
+    plt.plot(full_x_values, sin_wave_values,label='Fitted function', color='#D3D3D3')
         
-
-    # shifted_x_values = [(x + math.copysign((params[2] / params[1]), params[0])) for x in x_values]
-    if params[0] > 0:
-        shifted_x_values = [(x + (params[2] / params[1])) for x in x_values]
-    else:
-        shifted_x_values = [(x + (params[2] / params[1]) + 31) for x in x_values]
-
-    for i in range(len(data)):
-        plt.plot(shifted_x_values, data[i], label=labels[i])
+    for i in range(5):
+        plt.plot(data.to_series(5), data.to_series(i)) # , label=labels[i])
  
     # Customize the plot
-    print(os.path.basename(filename))
     plt.title(os.path.basename(filename))
     plt.xlabel("Time")
     plt.ylabel("Voltage")
     plt.xlim(plot_x_start, plot_x_finish)
     plt.ylim(-20000, 20000)
-    # plt.legend()
-    # print(arg, formatNumbers(THD_Values))
-    # Save the plot to a file (e.g., in PNG format)
-    # output_filename = str(int(math.copysign((params[2] / params[1]), params[0]))) + ' ' + os.path.splitext(arg)[0] + ".png"  # Change the filename and format as needed
     output_filename = os.path.splitext(filename)[0] + ".png"  # Change the filename and format as needed
     plt.savefig(output_filename, format="png")
-
 
 def main():
     arg = sys.argv[1]

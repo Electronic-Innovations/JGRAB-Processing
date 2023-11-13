@@ -1,5 +1,8 @@
 import os
+import polars as pl
+import numpy as np
 from jgrab_processing.jgrab import parse_string, parse_file
+from jgrab_processing.base import fit_sin_wave, process_data
 
 def test_jgrab_parse():
     input = """
@@ -53,3 +56,16 @@ def test_jgrab_parse_file():
     assert len(output[2]) == 128
     assert len(output[3]) == 128
     assert len(output[4]) == 128
+
+def test_sin_wave():
+    filename = os.path.join(os.path.dirname(__file__), 'examples/FullJGRAB.txt')
+    data = parse_file(filename, base = 10)
+    data_frame = process_data(data)
+    b = data_frame.select(pl.col("time","RphV"))
+    output = fit_sin_wave(b)
+    answer = [-9.35116387e+05, 3.48670922e-04, 3.13470606e+00]
+    result = np.allclose(output, answer, rtol=1e-05, atol=1e-08)
+    print(result)
+    #result = np.testing.assert_array_almost_equal_nulp(output, [-9.35116387e+05, 3.48670922e-04, 3.13470606e+00])
+    #print(result)
+    assert result

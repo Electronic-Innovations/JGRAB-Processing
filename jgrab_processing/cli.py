@@ -13,6 +13,7 @@ import subprocess
 
 import base
 import jgrab
+import polars as pl
 
 def file_list(path: str, force: bool = False) -> list[str]:
     # Get a list of all files in the folder with "JGRAB.txt" at the end of the filename
@@ -43,8 +44,10 @@ def main():  # pragma: no cover
     path = args.path[0]
     if os.path.isfile(path):
         data = jgrab.parse_file(path)
-        base.process_data(data)
-        base.plot(data, path)
+        data_frame = base.process_data(data)
+        sin_params = base.fit_sin_wave(data_frame.select(pl.col("time","RphV")))
+        base.plot(data_frame, sin_params, path)
+        # base.plot(data, path)
     elif os.path.isdir(path):
         print("Directory Provided")
         
@@ -52,6 +55,8 @@ def main():  # pragma: no cover
         print(files)
         for file_path in files:
             data = jgrab.parse_file(file_path)
-            base.plot(data, file_path)
+            data_frame = base.process_data(data)
+            sin_params = base.fit_sin_wave(data_frame.select(pl.col("time","RphV")))
+            base.plot(data_frame, sin_params, path)
     else:
         print("Not a valid path")

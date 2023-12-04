@@ -15,6 +15,8 @@ def parse_string(jgrab: str, base: int = 10) -> list[list[int]]:
         Parsed data in list of lists
     """
     
+    # This function should fail
+    
     start_reading_data = False
     data = [[],[],[],[],[]]
     timestamp = None
@@ -34,7 +36,6 @@ def parse_string(jgrab: str, base: int = 10) -> list[list[int]]:
                 data[col_index].append(value)
             except ValueError:
                 pass
-        
     return data
     
 def parse_file(path: str, base: int = 10) -> list[list[int]]:

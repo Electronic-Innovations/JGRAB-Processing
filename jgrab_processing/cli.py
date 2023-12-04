@@ -14,6 +14,7 @@ import subprocess
 import base
 import jgrab
 import polars as pl
+from tqdm import tqdm
 
 def file_list(path: str, force: bool = False) -> list[str]:
     # Get a list of all files in the folder with "JGRAB.txt" at the end of the filename
@@ -29,7 +30,18 @@ def file_list(path: str, force: bool = False) -> list[str]:
         file_list = unprocessed_list
     
     return [path + filename + '.txt' for filename in file_list]
-    
+
+def check_equal_length(list_of_lists):
+    # Check if the list of lists is not empty
+    if not list_of_lists:
+        return True  # Empty list is considered to have equal lengths
+
+    # Get the length of the first list
+    first_list_length = len(list_of_lists[0])
+
+    # Compare the length of the first list with the lengths of the remaining lists
+    return all(len(lst) == first_list_length for lst in list_of_lists[1:])
+
 
 def main():  # pragma: no cover
     parser = argparse.ArgumentParser()
@@ -52,11 +64,12 @@ def main():  # pragma: no cover
         print("Directory Provided")
         
         files = file_list(path, args.force)
-        print(files)
-        for file_path in files:
+        for file_path in tqdm(files):
+            print(file_path)
             data = jgrab.parse_file(file_path)
-            data_frame = base.process_data(data)
-            sin_params = base.fit_sin_wave(data_frame.select(pl.col("time","RphV")))
-            base.plot(data_frame, sin_params, path)
+            if check_equal_length(data) and len(data[0]) != 0: # If data isn't right, we should bail out gracefully.
+                data_frame = base.process_data(data)
+                sin_params = base.fit_sin_wave(data_frame.select(pl.col("time","RphV")))
+                base.plot(data_frame, sin_params, file_path)
     else:
         print("Not a valid path")

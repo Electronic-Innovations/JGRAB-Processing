@@ -88,6 +88,7 @@ def plot(data: pl.dataframe, sin_wave: list[float], filename: str):
     plt.ylim(-20000, 20000)
     output_filename = os.path.splitext(filename)[0] + ".png"  # Change the filename and format as needed
     plt.savefig(output_filename, format="png")
+    plt.close()
 
 def main():
     arg = sys.argv[1]

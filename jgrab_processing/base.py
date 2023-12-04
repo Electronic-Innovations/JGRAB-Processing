@@ -56,9 +56,21 @@ def process_data(data: list[list[int]]) -> pl.dataframe:
     frame = frame.with_columns(
         pl.Series(name="time", values=x_values)
     )
-    return frame
+    
+    out = frame.select(
+        pl.col('Dc-V').cast(pl.Float64),
+        pl.col('Sph-Unscaled').cast(pl.Float64),
+        pl.col('RphV').cast(pl.Float64),
+        pl.col('Rphl-Unscaled').cast(pl.Float64),
+        pl.col('SphV').cast(pl.Float64),
+        pl.col('time'),
+    )
+    
+    return out
 
 def fit_sin_wave(data: pl.dataframe) -> list[float]:
+    print(data.to_series(0))
+    print(data.to_series(1))
     params, params_covariance = optimize.curve_fit(sin_wave, data.to_series(0), data.to_series(1))
     return params
 

@@ -42,6 +42,15 @@ def check_equal_length(list_of_lists):
     # Compare the length of the first list with the lengths of the remaining lists
     return all(len(lst) == first_list_length for lst in list_of_lists[1:])
 
+def process_file(file_path: str):
+    data = jgrab.parse_file(file_path)
+    if check_equal_length(data) and len(data[0]) != 0: # If data isn't right, we should bail out gracefully.
+        data_frame = base.process_data(data)
+        print(data_frame)
+        sin_params = base.fit_sin_wave(data_frame.select(pl.col("time","RphV")))
+        print(data_frame.select(pl.col("time","RphV")))
+        print(sin_params)
+        base.plot(data_frame, sin_params, file_path)
 
 def main():  # pragma: no cover
     parser = argparse.ArgumentParser()
@@ -55,21 +64,13 @@ def main():  # pragma: no cover
     # Define the folder path
     path = args.path[0]
     if os.path.isfile(path):
-        data = jgrab.parse_file(path)
-        data_frame = base.process_data(data)
-        sin_params = base.fit_sin_wave(data_frame.select(pl.col("time","RphV")))
-        base.plot(data_frame, sin_params, path)
+        process_file(path)
         # base.plot(data, path)
     elif os.path.isdir(path):
         print("Directory Provided")
         
         files = file_list(path, args.force)
         for file_path in tqdm(files):
-            print(file_path)
-            data = jgrab.parse_file(file_path)
-            if check_equal_length(data) and len(data[0]) != 0: # If data isn't right, we should bail out gracefully.
-                data_frame = base.process_data(data)
-                sin_params = base.fit_sin_wave(data_frame.select(pl.col("time","RphV")))
-                base.plot(data_frame, sin_params, file_path)
+            process_file(file_path)
     else:
         print("Not a valid path")

@@ -44,13 +44,20 @@ def check_equal_length(list_of_lists):
 
 def process_file(file_path: str):
     data = jgrab.parse_file(file_path)
+    
     if check_equal_length(data) and len(data[0]) != 0: # If data isn't right, we should bail out gracefully.
         data_frame = base.process_data(data)
-        print(data_frame)
-        sin_params = base.fit_sin_wave(data_frame.select(pl.col("time","RphV")))
-        print(data_frame.select(pl.col("time","RphV")))
-        print(sin_params)
-        base.plot(data_frame, sin_params, file_path)
+        # ['Dc-V','Sph-Unscaled','RphV','Rphl-Unscaled','SphV']
+        data_frame = data_frame.with_columns(
+            pl.col('Dc-V').mul(0.0250819000819001),
+            pl.col('Sph-Unscaled').mul(0.02289),
+            pl.col('RphV').mul(0.0250819000819001),
+            pl.col('Rphl-Unscaled').mul(0.034335),
+            pl.col('SphV').mul(0.0250819000819001),
+        )
+        sin_params_r = base.fit_sin_wave(data_frame.select(pl.col("time","RphV")))
+        sin_params_s = base.fit_sin_wave(data_frame.select(pl.col("time","SphV")))
+        base.plot(data_frame, sin_params_r, sin_params_s, file_path)
 
 def main():  # pragma: no cover
     parser = argparse.ArgumentParser()

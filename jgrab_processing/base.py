@@ -29,7 +29,7 @@ def formatNumbers(numbers):
     return ["{:.2f}".format(number) for number in numbers]
 
 def sin_wave(x, amplitude, frequency, phase):
-    a = frequency * x
+    a = 2 * math.pi * frequency * x
     b = a + phase
     c = np.sin(b)
     d = amplitude * c
@@ -37,7 +37,7 @@ def sin_wave(x, amplitude, frequency, phase):
     #return amplitude * np.sin((frequency * x) + phase)
 
 def THD_N(x_values, y_values):
-    params, params_covariance = optimize.curve_fit(sin_wave, x_values, y_values, p0=[12000, 0.1, 1])
+    params, params_covariance = optimize.curve_fit(sin_wave, x_values, y_values, p0=[350.0, 50.0, 0.0])
     fundamental = sin_wave(x_values, params[0], params[1], params[2])
     noise = y_values - fundamental
     return (rms(noise) / rms(fundamental) * 100)
@@ -51,7 +51,7 @@ def process_data(data: list[list[int]]) -> pl.dataframe:
     labels = ['Dc-V','Sph-Unscaled','RphV','Rphl-Unscaled','SphV']
     frame.columns = labels
     
-    x_values = [(20 * value / 64) for value in range(len(data[0]))]
+    x_values = [(0.02 * value / 64) for value in range(len(data[0]))]
     
     frame = frame.with_columns(
         pl.Series(name="time", values=x_values)
@@ -69,35 +69,64 @@ def process_data(data: list[list[int]]) -> pl.dataframe:
     return out
 
 def fit_sin_wave(data: pl.dataframe) -> list[float]:
-    print(data.to_series(0))
-    print(data.to_series(1))
-    params, params_covariance = optimize.curve_fit(sin_wave, data.to_series(0), data.to_series(1))
+    params, params_covariance = optimize.curve_fit(sin_wave, data.to_series(0), data.to_series(1), [350.0, 50.0, 0.0])
+    #print(params_covariance)
+    
     return params
 
-def plot(data: pl.dataframe, sin_wave: list[float], filename: str):
-    plt.figure(figsize=(6, 4))
+def plot(data: pl.dataframe, sin_wave_params_r: list[float], sin_wave_params_s: list[float], filename: str):
+    #plt.figure(figsize=(6, 4))
+    fig, axs = plt.subplots(3, 1, figsize=(16, 10))
     # plt.scatter(x_data, y_data, label='Data')
     plot_x_start = 0
-    plot_x_finish = (20 * 240) / 64
-    full_x_values = np.arange(plot_x_start, plot_x_finish, 0.1)
-    phase_angle = 0 if sin_wave[0] > 0 else math.pi
+    plot_x_finish = (127 * 0.02) / 64
+    full_x_values = np.arange(plot_x_start, plot_x_finish, 0.0001)
+    phase_angle = 0 if sin_wave_params_r[0] > 0 else math.pi
     
-    a = (sin_wave[1] * full_x_values) + sin_wave[2] # phase_angle
-    b = np.sin(a)
-    c = sin_wave[0] * b
-    sin_wave_values = c
-    # sin_wave_values = sin_wave(full_x_values, sin_wave(0), sin_wave(1), phase_angle)
-    plt.plot(full_x_values, sin_wave_values,label='Fitted function', color='#D3D3D3')
-        
-    for i in range(5):
-        plt.plot(data.to_series(5), data.to_series(i)) # , label=labels[i])
- 
+    #a = (sin_wave[1] * full_x_values) + sin_wave[2] # phase_angle
+    #b = np.sin(a)
+    #c = sin_wave[0] * b
+    #sin_wave_values = c
+    sin_wave_values_r = sin_wave(full_x_values, sin_wave_params_r[0], sin_wave_params_r[1], sin_wave_params_r[2])
+    axs[0].plot(full_x_values, sin_wave_values_r, label='Fitted function', color='#D3D3D3')
+    
+    sin_wave_values_s = sin_wave(full_x_values, sin_wave_params_s[0], sin_wave_params_s[1], sin_wave_params_s[2])
+    axs[0].plot(full_x_values, sin_wave_values_s, label='Fitted function s', color='#D3D3D3')
+    # x_values = [(x - (sin_wave_params[2] / (2 * math.pi * sin_wave_params[1]))) for x in data.to_series(5)]
+    
+    axs[0].plot(data.to_series(5), data.to_series(2))
+    r_THD = THD_N(data.to_series(5), data.to_series(2))
+    
+    axs[0].plot(data.to_series(5), data.to_series(4))
+    s_THD = THD_N(data.to_series(5), data.to_series(4))
+     
     # Customize the plot
-    plt.title(os.path.basename(filename))
-    plt.xlabel("Time")
-    plt.ylabel("Voltage")
-    plt.xlim(plot_x_start, plot_x_finish)
-    plt.ylim(-20000, 20000)
+    axs[0].set_title(os.path.basename(filename))
+    #axs[0].xlabel("Time")
+    #axs[0].ylabel("Voltage")
+    axs[0].set_xlim(plot_x_start, plot_x_finish)
+    axs[0].set_ylim(-400, 400)
+    axs[0].set_ylabel("Voltage (VAC)")
+    axs[0].annotate("R THD+N {:.1f}%".format(r_THD), xy=(0, 360))
+    axs[0].annotate("S THD+N {:.1f}%".format(s_THD), xy=(0, 320))
+    axs[0].grid(True, linewidth = 0.2, alpha = 0.4)
+    
+    
+    axs[1].plot(data.to_series(5), data.to_series(3))
+    axs[1].plot(data.to_series(5), data.to_series(1))
+    axs[1].set_xlim(plot_x_start, plot_x_finish)
+    axs[1].set_ylim(-85, 85)
+    axs[1].set_ylabel("Current (A)")
+    axs[1].grid(True, linewidth = 0.2, alpha = 0.4)
+    
+    axs[2].plot(data.to_series(5), data.to_series(0))
+    axs[2].set_xlim(plot_x_start, plot_x_finish)
+    axs[2].set_ylim(-10, 850)
+    axs[2].set_ylabel("Voltage (VDC)")
+    axs[2].set_xlabel("Time (sec)")
+    axs[2].grid(True, linewidth = 0.2, alpha = 0.4)
+    
+    plt.tight_layout()
     output_filename = os.path.splitext(filename)[0] + ".png"  # Change the filename and format as needed
     plt.savefig(output_filename, format="png")
     plt.close()

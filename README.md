@@ -22,10 +22,20 @@ BaseClass().base_method()
 base_function()
 ```
 
+To run the program from the command line. You can point it at a single file
+
 ```bash
 $ python -m jgrab_processing
-#or
+
+# or
+
 $ jgrab_processing
+```
+
+Or you can point it at an entire folder.
+```bash
+$ python jgrab_processing .\tests\examples\example_data
+
 ```
 
 ## Development

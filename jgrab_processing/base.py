@@ -6,7 +6,7 @@ import numpy as np
 import polars as pl
 import matplotlib.pyplot as plt
 
-#import jgrab
+# import jgrab
 
 from scipy import optimize
 
@@ -159,12 +159,13 @@ def plot(data: pl.dataframe,
     output_filename = os.path.splitext(filename)[0] + ".png"
     # parquet_output_filename = os.path.splitext(filename)[0] + ".par"
     plt.savefig(output_filename, format="png")
-    # data.write_parquet(parquet_output_filename, compression="zstd", compression_level=22)
+    # data.write_parquet(parquet_output_filename, 
+    # compression="zstd", compression_level=22)
     plt.close()
 
 
-def main():
-    arg = sys.argv[1]
+# def main():
+    # arg = sys.argv[1]
     # data = jgrab.parse_file(arg)
     # plot(data, arg)
 

@@ -34,7 +34,7 @@ $ jgrab_processing
 
 Or you can point it at an entire folder.
 ```bash
-$ python jgrab_processing .\tests\examples\example_data
+$ python jgrab_processing ./tests/examples/example_data
 
 ```
 

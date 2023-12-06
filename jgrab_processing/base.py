@@ -157,7 +157,9 @@ def plot(data: pl.dataframe,
     plt.tight_layout()
     # Change the filename and format as needed
     output_filename = os.path.splitext(filename)[0] + ".png"
+    # parquet_output_filename = os.path.splitext(filename)[0] + ".par"
     plt.savefig(output_filename, format="png")
+    # data.write_parquet(parquet_output_filename, compression="zstd", compression_level=22)
     plt.close()
 
 

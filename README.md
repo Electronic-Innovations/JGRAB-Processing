@@ -1,43 +1,38 @@
 ---
 # jgrab_processing
 
-[![codecov](https://codecov.io/gh/danielpi/JGRAB-Processing/branch/main/graph/badge.svg?token=JGRAB-Processing_token_here)](https://codecov.io/gh/danielpi/JGRAB-Processing)
-[![CI](https://github.com/danielpi/JGRAB-Processing/actions/workflows/main.yml/badge.svg)](https://github.com/danielpi/JGRAB-Processing/actions/workflows/main.yml)
+Program for processing and graphing the data in JGRAB files.
 
-Awesome jgrab_processing created by danielpi
+## Setting up the environment
 
-## Install it from PyPI
+Once the project files have been cloned you can setup the python environment for running and modifying the program. This project needs Python version 3 and was developed with version 3.10.
+
+To create a virtual environment run the following command from the project folder
 
 ```bash
-pip install jgrab_processing
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Install the required packages
+
+```bash
+pip install -r requirements.txt
 ```
 
 ## Usage
 
-```py
-from jgrab_processing import BaseClass
-from jgrab_processing import base_function
-
-BaseClass().base_method()
-base_function()
-```
-
 To run the program from the command line. You can point it at a single file
 
 ```bash
-$ python -m jgrab_processing
-
-# or
-
-$ jgrab_processing
+python -m jgrab_processing -f ./tests/examples/example_data/FullJGRAB.txt
 ```
 
 Or you can point it at an entire folder.
-```bash
-$ python jgrab_processing ./tests/examples/example_data
 
+```bash
+python -m jgrab_processing -f ./tests/examples/example_data
 ```
 
-## Development
-
-Read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+## Command line options
+-f force, Without this switch the program will only process data files that haven't been processed before. If you give this switch then it will process all files.

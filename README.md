@@ -25,13 +25,13 @@ pip install -r requirements.txt
 To run the program from the command line. You can point it at a single file
 
 ```bash
-python -m jgrab_processing -f ./tests/examples/example_data/FullJGRAB.txt
+python jgrab_processing -f ./tests/examples/example_data/FullJGRAB.txt
 ```
 
 Or you can point it at an entire folder.
 
 ```bash
-python -m jgrab_processing -f ./tests/examples/example_data
+python jgrab_processing -f ./tests/examples/example_data
 ```
 
 ## Command line options

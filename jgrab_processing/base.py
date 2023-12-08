@@ -28,7 +28,7 @@ def rms(numbers: list[float]) -> float:
     return rms
 
 
-def formatNumbers(numbers: float) -> str:
+def format_numbers(numbers: list[float]) -> str:
     return ["{:.2f}".format(number) for number in numbers]
 
 

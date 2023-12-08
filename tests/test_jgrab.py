@@ -3,7 +3,7 @@ import math
 import polars as pl
 import numpy as np
 from jgrab_processing.jgrab import parse_string, parse_file
-from jgrab_processing.base import fit_sin_wave, process_data, sin_wave, rms, THD_N
+from jgrab_processing.base import fit_sin_wave, process_data, sin_wave, rms, THD_N, format_numbers
 
 def test_jgrab_parse():
     input = """
@@ -86,7 +86,16 @@ def test_rms():
     x_values = np.arange(0, 1.0, 0.0001)
     y_values = sin_wave(x_values, 335.0, 50.0, 0.0)
     assert math.isclose(rms(y_values), 240, rel_tol=0.05)
-    
+
+def test_rms_empty():
+    assert rms([]) == None
+
+def test_format_numbers():
+    assert format_numbers([3.33]) == ["3.33"]
+    assert format_numbers([1.0]) == ["1.00"]
+    assert format_numbers([3.1456]) == ["3.15"]
+    assert format_numbers([1.2,3.45,6.789,10.23456,12345678]) == ["1.20", "3.45", "6.79", "10.23", "12345678.00"]
+
 def test_THD_N():
     """
     Calculating the THD of a signale that should only contain the fundamental

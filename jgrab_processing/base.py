@@ -28,7 +28,7 @@ def rms(numbers: list[float]) -> float:
     return rms
 
 
-def format_numbers(numbers: list[float]) -> str:
+def format_numbers(numbers: list[float]) -> list[str]:
     return ["{:.2f}".format(number) for number in numbers]
 
 
@@ -170,5 +170,5 @@ def plot(data: pl.dataframe,
     # plot(data, arg)
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

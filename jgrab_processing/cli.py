@@ -38,7 +38,7 @@ def file_list(path: str, force: bool = False) -> list[str]:
     if force:
         file_list = data_file_list
     else:
-        file_list = unprocessed_list
+        file_list = list(unprocessed_list)
 
     return [path + '/' + filename + '.txt' for filename in file_list]
 
@@ -97,7 +97,10 @@ def main():  # pragma: no cover
         # base.plot(data, path)
     elif os.path.isdir(path):
         print("Directory Provided")
+        # Look for a summary file
+        # if not there create one
         files = file_list(path, args.force)
+        files.sort(reverse=True)
         for file_path in tqdm(files):
             process_file(file_path)
     else:

@@ -11,7 +11,10 @@ coverage:
 
 lint:
 	flake8 jgrab_processing
-	
+
+check:
+	mypy jgrab_processing
+
 push:
 	git push && git push --tags
 

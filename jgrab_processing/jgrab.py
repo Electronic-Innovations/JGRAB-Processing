@@ -18,7 +18,7 @@ def parse_string(jgrab: str, base: int = 10) -> list[list[int]]:
     # This function should fail
 
     start_reading_data = False
-    data = [[], [], [], [], []]
+    data: list[list[int]] = [[], [], [], [], []]
     col_index = 0
 
     for line in jgrab.splitlines():

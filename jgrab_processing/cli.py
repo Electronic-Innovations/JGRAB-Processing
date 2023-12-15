@@ -9,12 +9,28 @@ Be creative! do whatever you want!
 """
 import os
 import argparse
+from datetime import datetime
 
 import polars as pl
 from tqdm import tqdm
 
 import base
 import jgrab
+
+# https://stackoverflow.com/questions/1724693/find-a-file-in-python
+def find_file(name: str, path: str) -> str:
+    for root, dirs, files in os.walk(path):
+        if name in files:
+            return os.path.join(root, name)
+
+def datetime_from_filename(filename: str) -> datetime:
+    # Splitting the filename into date-time and the rest
+    date_time_part, rest = filename.rsplit('-', 1)
+    # Replacing underscores with colons to match the time format
+    date_time_part = date_time_part.replace("__", " ")
+    # Parsing the date and time
+    formatted_date_time = datetime.strptime(date_time_part, "%Y-%m-%d %H_%M")
+    return formatted_date_time
 
 
 def file_list(path: str, force: bool = False) -> list[str]:
@@ -56,7 +72,7 @@ def check_equal_length(list_of_lists):
     return all(len(lst) == first_list_length for lst in list_of_lists[1:])
 
 
-def process_file(file_path: str):
+def process_file(file_path: str) -> list[str]:
     data = jgrab.parse_file(file_path)
     # If data isn't right, we should bail out gracefully.
     if check_equal_length(data) and len(data[0]) != 0:
@@ -74,6 +90,23 @@ def process_file(file_path: str):
         sin_params_s = base.fit_sin_wave(
             data_frame.select(pl.col("time", "SphV")))
         base.plot(data_frame, sin_params_r, sin_params_s, file_path)
+        r_THD = base.THD_N(data_frame.to_series(5), data_frame.to_series(2))
+        r_Irms = base.rms(data_frame.to_series(3))
+        s_THD = base.THD_N(data_frame.to_series(5), data_frame.to_series(4))
+        s_Irms = base.rms(data_frame.to_series(1))
+        filename = os.path.basename(file_path)
+        datetime = datetime_from_filename(filename)
+        return [datetime.strftime("%Y-%m-%d %H:%M:%S"), 
+                filename, 
+                "{:.1f}%".format(r_THD) if abs(sin_params_r[0]) > 300 else "-1.0", 
+                "{:.1f}%".format(s_THD) if abs(sin_params_s[0]) > 300 else "-1.0",
+                "{:.1f}".format(r_Irms),
+                "{:.1f}".format(s_Irms),
+                "{:.1f}".format(abs(sin_params_r[0])),
+                "{:.1f}".format(abs(sin_params_s[0])),
+                "{:.1f}".format(sin_params_r[1]),
+                "{:.1f}".format(sin_params_s[1])]
+
 
 
 def main():  # pragma: no cover
@@ -97,11 +130,15 @@ def main():  # pragma: no cover
         # base.plot(data, path)
     elif os.path.isdir(path):
         print("Directory Provided")
-        # Look for a summary file
-        # if not there create one
-        files = file_list(path, args.force)
-        files.sort(reverse=True)
-        for file_path in tqdm(files):
-            process_file(file_path)
+
+        statistics_path = os.path.join(path, "statistics.csv")
+        with open(statistics_path, 'w') as stats_file:
+            stats_file.write("Time, Filename, THD R, THD S, Irms R, Irms S, Vamp R, Vamp S, freq R, freq S\n")
+            files = file_list(path, args.force)
+            files.sort(reverse=True)
+            for file_path in tqdm(files):
+                stats = process_file(file_path)
+                stats_line = ', '.join(map(str, stats))
+                stats_file.write(stats_line + "\n")
     else:
         print("Not a valid path")

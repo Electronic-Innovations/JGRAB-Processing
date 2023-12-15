@@ -98,8 +98,8 @@ def process_file(file_path: str) -> list[str]:
         datetime = datetime_from_filename(filename)
         return [datetime.strftime("%Y-%m-%d %H:%M:%S"), 
                 filename, 
-                "{:.1f}%".format(r_THD) if abs(sin_params_r[0]) > 300 else "-1.0", 
-                "{:.1f}%".format(s_THD) if abs(sin_params_s[0]) > 300 else "-1.0",
+                "{:.1f}%".format(r_THD) if abs(sin_params_r[0]) > 300 else "0.0%", 
+                "{:.1f}%".format(s_THD) if abs(sin_params_s[0]) > 300 else "0.0%",
                 "{:.1f}".format(r_Irms),
                 "{:.1f}".format(s_Irms),
                 "{:.1f}".format(abs(sin_params_r[0])),

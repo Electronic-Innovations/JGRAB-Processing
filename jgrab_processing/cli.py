@@ -75,6 +75,13 @@ def check_equal_length(list_of_lists):
 def process_file(file_path: str) -> list[str]:
     data = jgrab.parse_file(file_path)
     # If data isn't right, we should bail out gracefully.
+    if len(data[0]) == 0:
+        print(file_path)
+        raise Exception("Data file was empty")
+    if check_equal_length(data) == False:
+        for col in data:
+            print(len(col))
+        raise Exception("Data file contained values of varying length")
     if check_equal_length(data) and len(data[0]) != 0:
         data_frame = base.process_data(data)
         # ['Dc-V','Sph-Unscaled','RphV','Rphl-Unscaled','SphV']
@@ -106,7 +113,8 @@ def process_file(file_path: str) -> list[str]:
                 "{:.1f}".format(abs(sin_params_s[0])),
                 "{:.1f}".format(sin_params_r[1]),
                 "{:.1f}".format(sin_params_s[1])]
-
+    else:
+        raise Exception("Data not the right shape")
 
 
 def main():  # pragma: no cover

@@ -72,7 +72,7 @@ def check_equal_length(list_of_lists):
     return all(len(lst) == first_list_length for lst in list_of_lists[1:])
 
 
-def process_file(file_path: str) -> list[str]:
+def process_file(file_path: str, plots: bool = True) -> list[str]:
     data = jgrab.parse_file(file_path)
     # If data isn't right, we should bail out gracefully.
     if len(data[0]) == 0:
@@ -96,7 +96,8 @@ def process_file(file_path: str) -> list[str]:
             data_frame.select(pl.col("time", "RphV")))
         sin_params_s = base.fit_sin_wave(
             data_frame.select(pl.col("time", "SphV")))
-        base.plot(data_frame, sin_params_r, sin_params_s, file_path)
+        if plots:
+            base.plot(data_frame, sin_params_r, sin_params_s, file_path)
         r_THD = base.THD_N(data_frame.to_series(5), data_frame.to_series(2))
         r_Irms = base.rms(data_frame.to_series(3))
         s_THD = base.THD_N(data_frame.to_series(5), data_frame.to_series(4))
@@ -126,10 +127,13 @@ def main():  # pragma: no cover
                         "--force",
                         action='store_true',
                         help="Process all text files")
-
+    #parser.add_argument("-pl",
+    #                    "--plots",
+    #                    help="Generate plots")
     args = parser.parse_args()
 
     # Define the folder path
+    print(args.path)
     path = os.path.abspath(args.path[0])
     print(path)
 
@@ -145,7 +149,8 @@ def main():  # pragma: no cover
             files = file_list(path, args.force)
             files.sort(reverse=True)
             for file_path in tqdm(files):
-                stats = process_file(file_path)
+                #stats = process_file(file_path, plots=args.plots)
+                stats = process_file(file_path, plots=False)
                 stats_line = ', '.join(map(str, stats))
                 stats_file.write(stats_line + "\n")
     else:
